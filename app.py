@@ -204,8 +204,6 @@ def ask():
 
 # ── Start server ───────────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    app.run(
-        host='127.0.0.1',  # Only accessible from your own machine
-        port=5000,
-        debug=True         # Auto-restarts when you edit this file
-    )
+    port = int(os.environ.get('PORT', 5000))
+    host = '0.0.0.0' if os.environ.get('PORT') else '127.0.0.1'
+    app.run(host=host, port=port, debug=not os.environ.get('PORT'))
