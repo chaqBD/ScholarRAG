@@ -22,7 +22,7 @@ import os
 import urllib.request
 import urllib.error
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 from retriever import load_documents, find_relevant_docs
@@ -155,17 +155,8 @@ PAPER EXTRACTS:
 # ── Routes ─────────────────────────────────────────────────────────────────────
 @app.route('/', methods=['GET'])
 def index():
-    return jsonify({
-        'name': 'ScholarRAG API',
-        'status': 'running',
-        'documents_loaded': len(DOCUMENTS),
-        'model': MODEL,
-        'endpoints': {
-            'health': 'GET /health',
-            'ask':    'POST /ask  { "question": "..." }'
-        },
-        'frontend': 'https://chaqbd.github.io/ScholarRAG/'
-    })
+    root = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(root, 'index.html')
 
 
 @app.route('/health', methods=['GET'])

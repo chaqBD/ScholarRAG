@@ -515,7 +515,15 @@
 </div>
 
 <script>
-  let BASE = localStorage.getItem('srag_url') || 'https://scholarrag.onrender.com';
+  function getBase() {
+    const stored = localStorage.getItem('srag_url');
+    if (stored) return stored;
+    const h = window.location.hostname;
+    if (h === 'scholarrag.onrender.com') return window.location.origin;
+    if (h === '127.0.0.1' || h === 'localhost') return 'http://127.0.0.1:5000';
+    return 'https://scholarrag.onrender.com'; // GitHub Pages fallback
+  }
+  let BASE = getBase();
   document.getElementById('urlIn').value = BASE;
   checkConn();
 
