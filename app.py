@@ -153,9 +153,23 @@ PAPER EXTRACTS:
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({
+        'name': 'ScholarRAG API',
+        'status': 'running',
+        'documents_loaded': len(DOCUMENTS),
+        'model': MODEL,
+        'endpoints': {
+            'health': 'GET /health',
+            'ask':    'POST /ask  { "question": "..." }'
+        },
+        'frontend': 'https://chaqbd.github.io/ScholarRAG/'
+    })
+
+
 @app.route('/health', methods=['GET'])
 def health():
-    """Quick check to confirm the server is running."""
     return jsonify({
         'status': 'ok',
         'documents_loaded': len(DOCUMENTS),
