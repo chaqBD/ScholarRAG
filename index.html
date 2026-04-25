@@ -3,527 +3,608 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Research Q&A — PDF Assistant</title>
+  <title>ScholarRAG — AI Research Intelligence</title>
+  <meta name="description" content="Ask natural-language questions across academic papers on Supply Chain, XAI & ML. Powered by Claude AI." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
   <style>
-    /* ── Reset & base ─────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg:       #070b14;
+      --surface:  #0d1421;
+      --card:     rgba(255,255,255,0.035);
+      --border:   rgba(255,255,255,0.08);
+      --blue:     #3b82f6;
+      --cyan:     #22d3ee;
+      --green:    #10b981;
+      --purple:   #a78bfa;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --dim:      #475569;
+      --r:        12px;
+      --rl:       20px;
+      --display:  'Space Grotesk', sans-serif;
+      --body:     'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      background: #f0f2f5;
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px;
+      overflow-x: hidden;
     }
 
-    /* ── Wrapper ──────────────────────────────────────────────────────────── */
-    .container {
-      width: 100%;
-      max-width: 780px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+    /* ── Orbs ── */
+    .orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .orb  { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.15; animation: drift 22s ease-in-out infinite; }
+    .o1   { width:700px; height:700px; background:#3b82f6; top:-250px; left:-200px; animation-delay:0s; }
+    .o2   { width:550px; height:550px; background:#8b5cf6; top:35%;   right:-180px; animation-delay:-8s; }
+    .o3   { width:450px; height:450px; background:#06b6d4; bottom:-180px; left:28%; animation-delay:-16s; }
+    @keyframes drift {
+      0%,100% { transform:translate(0,0) scale(1); }
+      33%     { transform:translate(28px,-36px) scale(1.04); }
+      66%     { transform:translate(-18px,26px) scale(0.96); }
     }
 
-    /* ── Header ───────────────────────────────────────────────────────────── */
-    header {
-      background: #fff;
-      border: 1px solid #e0e3ea;
-      border-radius: 14px;
-      padding: 20px 24px;
+    /* ── Layout ── */
+    .page { position:relative; z-index:1; }
+    .wrap { max-width:880px; margin:0 auto; padding:0 24px; }
+
+    /* ── Nav ── */
+    .nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      backdrop-filter:blur(20px);
+      background:rgba(7,11,20,0.72);
+      border-bottom:1px solid var(--border);
+      height:62px; display:flex; align-items:center;
+    }
+    .nav .wrap { display:flex; align-items:center; justify-content:space-between; width:100%; }
+    .brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .brand-icon {
+      width:36px; height:36px; border-radius:10px;
+      background:linear-gradient(135deg,var(--blue),var(--cyan));
+      display:flex; align-items:center; justify-content:center;
+      font-size:15px; color:#fff;
+    }
+    .brand-name {
+      font-family:var(--display); font-size:18px; font-weight:700;
+      background:linear-gradient(135deg,#fff 30%,var(--cyan));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .nav-r { display:flex; align-items:center; gap:10px; }
+    .status-pill {
+      display:flex; align-items:center; gap:6px;
+      padding:5px 13px; border-radius:999px;
+      font-size:12px; font-weight:500; cursor:pointer;
+      background:var(--card); border:1px solid var(--border);
+      transition:border-color .2s;
+    }
+    .status-pill:hover { border-color:var(--cyan); }
+    .sdot { width:7px; height:7px; border-radius:50%; background:var(--dim); transition:background .3s; }
+    .sdot.on  { background:var(--green); box-shadow:0 0 6px var(--green); animation:blink 2s ease infinite; }
+    .sdot.off { background:#ef4444; }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.45} }
+    .icon-btn {
+      width:36px; height:36px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--card); border:1px solid var(--border);
+      color:var(--muted); cursor:pointer; font-size:14px; text-decoration:none;
+      transition:all .2s;
+    }
+    .icon-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+
+    /* ── Hero ── */
+    .hero { padding:108px 0 52px; text-align:center; }
+    .hero-tag {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:6px 16px; border-radius:999px; margin-bottom:22px;
+      border:1px solid rgba(34,211,238,.28);
+      background:rgba(34,211,238,.06);
+      font-size:11px; font-weight:600; color:var(--cyan);
+      letter-spacing:.07em; text-transform:uppercase;
+    }
+    .hero h1 {
+      font-family:var(--display);
+      font-size:clamp(2rem,5vw,3.3rem);
+      font-weight:700; line-height:1.13; margin-bottom:18px;
+    }
+    .grad {
+      background:linear-gradient(120deg,var(--cyan) 0%,var(--blue) 45%,var(--purple) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .hero-sub {
+      font-size:1.05rem; color:var(--muted); max-width:520px;
+      margin:0 auto 30px; line-height:1.75;
     }
 
-    header h1 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1a1f36;
+    .pills { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:44px; }
+    .pill {
+      display:flex; align-items:center; gap:6px;
+      padding:6px 14px; border-radius:999px;
+      font-size:12px; font-weight:500;
+      border:1px solid var(--border); background:var(--card); color:var(--muted);
     }
+    .pill i { font-size:11px; }
+    .pill.c { border-color:rgba(34,211,238,.3);  color:var(--cyan);   background:rgba(34,211,238,.06); }
+    .pill.b { border-color:rgba(59,130,246,.3);  color:#93c5fd;       background:rgba(59,130,246,.06); }
+    .pill.p { border-color:rgba(167,139,250,.3); color:var(--purple); background:rgba(167,139,250,.06);}
+    .pill.g { border-color:rgba(16,185,129,.3);  color:#6ee7b7;       background:rgba(16,185,129,.06); }
 
-    header p {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 4px;
+    .stats {
+      display:flex; flex-wrap:wrap;
+      border:1px solid var(--border); border-radius:var(--rl);
+      background:var(--card); backdrop-filter:blur(8px);
+      overflow:hidden; margin-bottom:52px;
     }
+    .stat { flex:1; min-width:130px; padding:16px 20px; text-align:center; border-right:1px solid var(--border); }
+    .stat:last-child { border-right:none; }
+    .sval { font-family:var(--display); font-size:1.45rem; font-weight:700; color:var(--cyan); line-height:1; margin-bottom:4px; }
+    .slbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; }
 
-    .badges {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      flex-wrap: wrap;
+    /* ── Query section ── */
+    .qsec { padding:0 0 48px; }
+
+    .offline-bar {
+      display:flex; align-items:flex-start; gap:12px;
+      padding:14px 18px; border-radius:var(--r);
+      background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.2);
+      font-size:13px; color:#fca5a5; margin-bottom:16px;
     }
+    .offline-bar i { font-size:15px; color:#ef4444; margin-top:1px; flex-shrink:0; }
+    .offline-bar code { background:rgba(239,68,68,.14); padding:2px 7px; border-radius:4px; font-size:12px; }
 
-    .badge {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1d4ed8;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
+    .qcard {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--rl); padding:24px;
+      backdrop-filter:blur(10px); transition:border-color .3s; margin-bottom:14px;
     }
-
-    /* ── Chat window ──────────────────────────────────────────────────────── */
-    #chat {
-      background: #fff;
-      border: 1px solid #e0e3ea;
-      border-radius: 14px;
-      padding: 20px;
-      min-height: 380px;
-      max-height: 520px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+    .qcard:focus-within { border-color:rgba(34,211,238,.38); }
+    .qlabel { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); margin-bottom:12px; }
+    .qlabel i { color:var(--cyan); }
+    textarea.qinput {
+      width:100%; background:transparent; border:none; outline:none;
+      color:var(--text); font-family:var(--body); font-size:1rem;
+      line-height:1.65; resize:none; min-height:76px;
     }
-
-    /* Scrollbar */
-    #chat::-webkit-scrollbar          { width: 5px; }
-    #chat::-webkit-scrollbar-track    { background: transparent; }
-    #chat::-webkit-scrollbar-thumb    { background: #d1d5db; border-radius: 4px; }
-
-    /* ── Welcome state ────────────────────────────────────────────────────── */
-    .welcome-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      text-align: center;
-      padding: 24px;
-      gap: 14px;
-      color: #6b7280;
+    textarea.qinput::placeholder { color:var(--dim); }
+    .qfoot { display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+    .ccount { font-size:12px; color:var(--dim); }
+    .send-btn {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 22px; border-radius:10px;
+      background:linear-gradient(135deg,var(--blue),var(--cyan));
+      color:#fff; font-family:var(--body); font-size:14px; font-weight:600;
+      border:none; cursor:pointer; transition:all .2s;
+      box-shadow:0 0 22px rgba(59,130,246,.28);
     }
+    .send-btn:hover   { transform:translateY(-1px); box-shadow:0 4px 26px rgba(59,130,246,.4); }
+    .send-btn:active  { transform:translateY(0); }
+    .send-btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spin { animation:spin .7s linear infinite; }
 
-    .welcome-state .icon { font-size: 40px; }
-    .welcome-state h2 { font-size: 16px; color: #374151; }
-    .welcome-state p  { font-size: 13px; line-height: 1.6; max-width: 380px; }
-
-    .suggestion-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      width: 100%;
-      max-width: 520px;
+    .eg-lbl { font-size:12px; color:var(--dim); margin-bottom:9px; }
+    .examples { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:40px; }
+    .eg {
+      padding:7px 14px; border-radius:999px;
+      border:1px solid var(--border); background:var(--card);
+      font-size:12px; color:var(--muted); cursor:pointer; transition:all .2s;
     }
+    .eg:hover { border-color:var(--cyan); color:var(--cyan); background:rgba(34,211,238,.06); }
 
-    .suggestion {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 12px;
-      color: #374151;
-      cursor: pointer;
-      text-align: left;
-      transition: border-color 0.15s, background 0.15s;
+    /* ── Answer ── */
+    .ans-wrap { margin-bottom:52px; }
+    @keyframes up { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .ans-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--rl); padding:28px;
+      backdrop-filter:blur(10px); animation:up .4s ease;
     }
-
-    .suggestion:hover {
-      border-color: #3b82f6;
-      background: #eff6ff;
-      color: #1d4ed8;
+    .ans-head {
+      display:flex; align-items:center; gap:10px;
+      margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border);
     }
-
-    /* ── Messages ─────────────────────────────────────────────────────────── */
-    .message {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      animation: fadeIn 0.2s ease;
+    .ans-av {
+      width:34px; height:34px; border-radius:9px; flex-shrink:0;
+      background:linear-gradient(135deg,var(--blue),var(--cyan));
+      display:flex; align-items:center; justify-content:center;
+      font-size:15px; color:#fff;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .ans-meta .albl { font-size:13px; font-weight:600; }
+    .ans-meta .asub { font-size:11px; color:var(--muted); }
+    .copy-btn { margin-left:auto; color:var(--dim); font-size:14px; cursor:pointer; transition:color .2s; }
+    .copy-btn:hover { color:var(--cyan); }
+    .ans-body { font-size:.95rem; line-height:1.85; white-space:pre-wrap; }
+    .ans-body strong { color:var(--cyan); font-weight:600; }
+    .src-sec  { margin-top:18px; padding-top:14px; border-top:1px solid var(--border); }
+    .src-lbl  { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:9px; display:flex; align-items:center; gap:6px; }
+    .src-tags { display:flex; flex-wrap:wrap; gap:7px; }
+    .src-tag  {
+      display:flex; align-items:center; gap:5px;
+      padding:5px 12px; border-radius:6px;
+      background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.25);
+      font-size:12px; font-weight:500; color:#93c5fd;
     }
+    .src-tag i { font-size:10px; }
 
-    .message.user  { align-items: flex-end; }
-    .message.ai    { align-items: flex-start; }
-
-    .msg-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: #9ca3af;
-      padding: 0 4px;
+    /* ── How it works ── */
+    .hiw { padding:48px 0 64px; }
+    .sec-title { font-family:var(--display); font-size:1.65rem; font-weight:700; text-align:center; margin-bottom:8px; }
+    .sec-sub   { text-align:center; color:var(--muted); font-size:.9rem; margin-bottom:36px; }
+    .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; }
+    .step {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--r); padding:22px; position:relative;
+      overflow:hidden; transition:border-color .3s;
     }
-
-    .msg-bubble {
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-size: 14px;
-      line-height: 1.65;
-      white-space: pre-wrap;
-      max-width: 85%;
+    .step:hover { border-color:rgba(34,211,238,.28); }
+    .step::after {
+      content:attr(data-n);
+      position:absolute; top:-6px; right:12px;
+      font-family:var(--display); font-size:4.5rem; font-weight:700;
+      color:rgba(255,255,255,.025); line-height:1; pointer-events:none;
     }
+    .step-ico { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px; margin-bottom:14px; }
+    .ico-b { background:rgba(59,130,246,.14); color:#93c5fd; }
+    .ico-c { background:rgba(34,211,238,.14);  color:var(--cyan); }
+    .ico-p { background:rgba(167,139,250,.14); color:var(--purple); }
+    .ico-g { background:rgba(16,185,129,.14);  color:#6ee7b7; }
+    .step h3 { font-size:14px; font-weight:600; margin-bottom:7px; }
+    .step p  { font-size:12.5px; color:var(--muted); line-height:1.6; }
 
-    .message.user .msg-bubble {
-      background: #2563eb;
-      color: #fff;
-      border-bottom-right-radius: 4px;
+    .stack-row { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; padding:40px 0 0; }
+    .sb {
+      display:flex; align-items:center; gap:7px;
+      padding:8px 16px; border-radius:10px;
+      background:var(--card); border:1px solid var(--border);
+      font-size:12px; font-weight:500; color:var(--muted);
     }
+    .sb i { font-size:14px; }
+    .sb.py  { border-color:rgba(59,130,246,.25); color:#93c5fd; }
+    .sb.fl  { border-color:rgba(16,185,129,.25);  color:#6ee7b7; }
+    .sb.ai  { border-color:rgba(167,139,250,.25); color:var(--purple); }
+    .sb.pdf { border-color:rgba(239,68,68,.25);   color:#fca5a5; }
+    .sb.gh  { border-color:rgba(255,255,255,.15); color:var(--muted); }
 
-    .message.ai .msg-bubble {
-      background: #f3f4f6;
-      color: #111827;
-      border-bottom-left-radius: 4px;
+    /* ── Settings modal ── */
+    .overlay {
+      position:fixed; inset:0; z-index:200;
+      background:rgba(0,0,0,.65); backdrop-filter:blur(5px);
+      display:flex; align-items:center; justify-content:center; padding:24px;
     }
-
-    .message.ai.error .msg-bubble {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
+    .modal {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--rl); padding:32px; width:100%; max-width:430px;
+      animation:up .3s ease;
     }
-
-    /* ── Source tags ──────────────────────────────────────────────────────── */
-    .sources {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      padding: 0 4px;
+    .modal h2 { font-family:var(--display); font-size:1.2rem; margin-bottom:8px; }
+    .mdesc { font-size:13px; color:var(--muted); line-height:1.65; margin-bottom:22px; }
+    .mdesc code { background:rgba(255,255,255,.06); padding:2px 7px; border-radius:4px; font-size:12px; }
+    .modal label { font-size:13px; font-weight:500; display:block; margin-bottom:6px; }
+    .modal input {
+      width:100%; padding:10px 14px;
+      background:rgba(255,255,255,.04); border:1px solid var(--border);
+      border-radius:8px; color:var(--text); font-family:var(--body);
+      font-size:14px; outline:none; transition:border-color .2s;
     }
-
-    .source-tag {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1d4ed8;
-      padding: 2px 8px;
-      border-radius: 8px;
-      font-size: 10px;
-      font-weight: 600;
-      font-family: 'Courier New', monospace;
+    .modal input:focus { border-color:var(--cyan); }
+    .mact { display:flex; gap:10px; margin-top:18px; }
+    .btn-pri {
+      flex:1; padding:10px; border-radius:8px;
+      background:linear-gradient(135deg,var(--blue),var(--cyan));
+      color:#fff; font-family:var(--body); font-size:14px; font-weight:600;
+      border:none; cursor:pointer; transition:opacity .2s;
     }
-
-    /* ── Thinking animation ───────────────────────────────────────────────── */
-    .thinking-dots {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      padding: 8px 0;
+    .btn-pri:hover { opacity:.88; }
+    .btn-sec {
+      padding:10px 18px; border-radius:8px; background:transparent;
+      border:1px solid var(--border); color:var(--muted);
+      font-family:var(--body); font-size:14px; cursor:pointer; transition:all .2s;
     }
+    .btn-sec:hover { border-color:var(--cyan); color:var(--cyan); }
 
-    .dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #9ca3af;
-      animation: bounce 1.2s ease infinite;
+    /* ── Footer ── */
+    .foot { border-top:1px solid var(--border); padding:32px 0; text-align:center; }
+    .foot-links { display:flex; justify-content:center; flex-wrap:wrap; gap:22px; margin-bottom:12px; }
+    .foot-links a { font-size:13px; color:var(--muted); text-decoration:none; display:flex; align-items:center; gap:6px; transition:color .2s; }
+    .foot-links a:hover { color:var(--cyan); }
+    .foot p { font-size:12px; color:var(--dim); }
+    .foot strong { color:var(--muted); }
+
+    .hidden { display:none !important; }
+
+    @media(max-width:600px){
+      .stat { min-width:50%; }
+      .stat:nth-child(2) { border-right:none; }
+      .stat:nth-child(3) { border-top:1px solid var(--border); }
     }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes bounce {
-      0%, 60%, 100% { transform: translateY(0); }
-      30%            { transform: translateY(-7px); }
-    }
-
-    /* ── Input area ───────────────────────────────────────────────────────── */
-    .input-area {
-      background: #fff;
-      border: 1px solid #e0e3ea;
-      border-radius: 14px;
-      padding: 14px 16px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-    }
-
-    textarea {
-      flex: 1;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-family: inherit;
-      font-size: 14px;
-      color: #111827;
-      resize: none;
-      outline: none;
-      min-height: 44px;
-      max-height: 120px;
-      line-height: 1.5;
-      transition: border-color 0.15s;
-    }
-
-    textarea:focus      { border-color: #2563eb; }
-    textarea::placeholder { color: #9ca3af; }
-
-    #send-btn {
-      background: #2563eb;
-      border: none;
-      border-radius: 10px;
-      width: 44px; height: 44px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.15s, transform 0.1s;
-    }
-    #send-btn:hover   { background: #1d4ed8; }
-    #send-btn:active  { transform: scale(0.95); }
-    #send-btn:disabled { background: #93c5fd; cursor: not-allowed; transform: none; }
-
-    .hint {
-      margin-top: 8px;
-      font-size: 11px;
-      color: #9ca3af;
-      text-align: center;
-    }
-
-    /* ── Server status ────────────────────────────────────────────────────── */
-    .status-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #6b7280;
-      padding: 2px 0;
-    }
-
-    .status-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #d1d5db;
-      flex-shrink: 0;
-    }
-    .status-dot.online  { background: #22c55e; }
-    .status-dot.offline { background: #ef4444; }
   </style>
 </head>
 <body>
 
-<div class="container">
+<div class="orbs">
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+</div>
 
-  <!-- Header -->
-  <header>
-    <h1>📚 Research Q&amp;A Assistant</h1>
-    <p>Powered by your PDF papers + Claude AI — ask anything about the research</p>
-    <div class="badges">
-      <span class="badge">RAG System</span>
-      <span class="badge">26 Papers</span>
-      <span class="badge">Supply Chain &amp; XAI</span>
-    </div>
-  </header>
+<div class="page">
 
-  <!-- Chat window -->
-  <div id="chat">
-    <div class="welcome-state" id="welcome">
-      <div class="icon">🔬</div>
-      <h2>Ask a question about the research papers</h2>
-      <p>The assistant searches all 26 papers, picks the most relevant ones, and answers using their content.</p>
-      <div class="suggestion-grid">
-        <button class="suggestion" onclick="useSuggestion(this)">What is explainable AI (XAI)?</button>
-        <button class="suggestion" onclick="useSuggestion(this)">How does SHAP work?</button>
-        <button class="suggestion" onclick="useSuggestion(this)">Which ML method is best for demand forecasting?</button>
-        <button class="suggestion" onclick="useSuggestion(this)">What challenges exist for AI in supply chains?</button>
-        <button class="suggestion" onclick="useSuggestion(this)">What is neurosymbolic AI?</button>
-        <button class="suggestion" onclick="useSuggestion(this)">How does LSTM outperform other models?</button>
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="wrap">
+      <a href="#" class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-brain"></i></div>
+        <span class="brand-name">ScholarRAG</span>
+      </a>
+      <div class="nav-r">
+        <div class="status-pill" id="sPill" onclick="openSettings()">
+          <div class="sdot" id="sDot"></div>
+          <span id="sTxt">Checking...</span>
+        </div>
+        <div class="icon-btn" title="Server settings" onclick="openSettings()">
+          <i class="fa-solid fa-gear"></i>
+        </div>
+        <a class="icon-btn" href="https://github.com/ChaqBD/ScholarRAG" target="_blank" title="GitHub">
+          <i class="fa-brands fa-github"></i>
+        </a>
       </div>
     </div>
-  </div>
+  </nav>
 
-  <!-- Input area -->
-  <div class="input-area">
-    <div class="input-row">
-      <textarea
-        id="question"
-        placeholder="Type your question and press Enter…"
-        rows="1"
-        onkeydown="handleKey(event)"
-        oninput="autoResize(this)"
-      ></textarea>
-      <button id="send-btn" onclick="sendQuestion()" title="Send question">
-        <!-- Send icon -->
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-             stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-tag">
+        <i class="fa-solid fa-bolt"></i>
+        RAG &middot; Claude AI &middot; Supply Chain Research
+      </div>
+      <h1>Ask Your Research Papers<br><span class="grad">Anything</span></h1>
+      <p class="hero-sub">
+        AI-powered research intelligence for Supply Chain Management,
+        Explainable AI, and Machine Learning. Cited answers, zero hallucination.
+      </p>
+
+      <div class="pills">
+        <span class="pill c"><i class="fa-solid fa-link"></i>Supply Chain</span>
+        <span class="pill p"><i class="fa-solid fa-eye"></i>Explainable AI</span>
+        <span class="pill b"><i class="fa-solid fa-chart-line"></i>Forecasting</span>
+        <span class="pill g"><i class="fa-solid fa-robot"></i>Claude AI</span>
+        <span class="pill"><i class="fa-solid fa-lock"></i>Local &amp; Private</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="sval">37</div><div class="slbl">Papers Indexed</div></div>
+        <div class="stat"><div class="sval">RAG</div><div class="slbl">Architecture</div></div>
+        <div class="stat"><div class="sval">4</div><div class="slbl">Papers / Query</div></div>
+        <div class="stat"><div class="sval">0</div><div class="slbl">Cloud Storage</div></div>
+      </div>
     </div>
-    <div class="status-bar">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-text">Checking server…</span>
+  </section>
+
+  <!-- QUERY -->
+  <section class="qsec">
+    <div class="wrap">
+
+      <div class="offline-bar hidden" id="offBar">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>Local server not running. In your project folder run: <code>python app.py</code> &mdash; then click the status pill to reconnect.</span>
+      </div>
+
+      <div class="qcard">
+        <div class="qlabel"><i class="fa-solid fa-magnifying-glass"></i>Ask a research question</div>
+        <textarea
+          class="qinput" id="qin"
+          placeholder="e.g. How does SHAP improve transparency in supply chain AI models?"
+          rows="3"
+          oninput="onInput()"
+          onkeydown="onKey(event)"
+        ></textarea>
+        <div class="qfoot">
+          <span class="ccount" id="cc">0 / 500</span>
+          <button class="send-btn" id="sendBtn" onclick="ask()">
+            <i class="fa-solid fa-paper-plane" id="sendIco"></i>
+            Ask ScholarRAG
+          </button>
+        </div>
+      </div>
+
+      <p class="eg-lbl">Try an example:</p>
+      <div class="examples">
+        <span class="eg" onclick="useEg(this)">What is explainable AI and why does it matter in SCM?</span>
+        <span class="eg" onclick="useEg(this)">How does SHAP assign feature importance to predictions?</span>
+        <span class="eg" onclick="useEg(this)">Compare LSTM and Random Forest for demand forecasting</span>
+        <span class="eg" onclick="useEg(this)">What are the barriers to AI adoption in supply chains?</span>
+        <span class="eg" onclick="useEg(this)">How can XAI build trust in automated procurement decisions?</span>
+      </div>
+
+      <div class="ans-wrap hidden" id="ansWrap">
+        <div class="ans-card">
+          <div class="ans-head">
+            <div class="ans-av"><i class="fa-solid fa-brain"></i></div>
+            <div class="ans-meta">
+              <div class="albl">ScholarRAG</div>
+              <div class="asub">claude-sonnet-4-6 &middot; RAG-grounded</div>
+            </div>
+            <i class="fa-solid fa-copy copy-btn" id="copyBtn" title="Copy answer" onclick="copyAns()"></i>
+          </div>
+          <div class="ans-body" id="ansBody"></div>
+          <div class="src-sec">
+            <div class="src-lbl"><i class="fa-solid fa-book-open"></i>Sources retrieved</div>
+            <div class="src-tags" id="srcTags"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="hiw">
+    <div class="wrap">
+      <h2 class="sec-title">How It Works</h2>
+      <p class="sec-sub">Four components, one pipeline &mdash; from raw PDFs to cited answers</p>
+      <div class="steps">
+        <div class="step" data-n="1">
+          <div class="step-ico ico-b"><i class="fa-solid fa-file-pdf"></i></div>
+          <h3>PDF Extraction</h3>
+          <p>pdfminer pulls the abstract, introduction and conclusion from every paper &mdash; highest-signal sections only.</p>
+        </div>
+        <div class="step" data-n="2">
+          <div class="step-ico ico-c"><i class="fa-solid fa-chart-bar"></i></div>
+          <h3>Keyword Retrieval</h3>
+          <p>Stopwords stripped, keywords scored against every document. Top 4 papers selected per query &mdash; no embeddings needed.</p>
+        </div>
+        <div class="step" data-n="3">
+          <div class="step-ico ico-p"><i class="fa-solid fa-brain"></i></div>
+          <h3>Claude Synthesis</h3>
+          <p>Extracted paper text becomes Claude&rsquo;s context. Answers are grounded in those documents &mdash; zero hallucination.</p>
+        </div>
+        <div class="step" data-n="4">
+          <div class="step-ico ico-g"><i class="fa-solid fa-quote-left"></i></div>
+          <h3>Cited Answer</h3>
+          <p>Every claim traces back to a specific paper (&ldquo;According to RL-7&hellip;&rdquo;) so you can verify the exact source.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <span class="sb py"><i class="fa-brands fa-python"></i>Python 3.9+</span>
+        <span class="sb fl"><i class="fa-solid fa-flask"></i>Flask</span>
+        <span class="sb ai"><i class="fa-solid fa-robot"></i>Claude Sonnet 4.6</span>
+        <span class="sb pdf"><i class="fa-solid fa-file-pdf"></i>pdfminer.six</span>
+        <span class="sb gh"><i class="fa-brands fa-github"></i>Open Source &middot; MIT</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-links">
+        <a href="https://github.com/ChaqBD/ScholarRAG" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a>
+        <a href="https://console.anthropic.com" target="_blank"><i class="fa-solid fa-key"></i>Get API Key</a>
+        <a href="#" onclick="openSettings();return false"><i class="fa-solid fa-gear"></i>Configure Server</a>
+      </div>
+      <p>Built by <strong>Shakir</strong> &nbsp;&middot;&nbsp; Open-source under MIT &nbsp;&middot;&nbsp; Powered by Claude AI</p>
+    </div>
+  </footer>
 
 </div>
 
+<!-- SETTINGS MODAL -->
+<div class="overlay hidden" id="modal">
+  <div class="modal">
+    <h2><i class="fa-solid fa-gear" style="color:var(--cyan);margin-right:8px"></i>Server Configuration</h2>
+    <p class="mdesc">
+      ScholarRAG calls a local Flask backend. Enter the URL where
+      <code>python app.py</code> is running (default: <code>http://127.0.0.1:5000</code>).
+    </p>
+    <label for="urlIn">Backend URL</label>
+    <input type="text" id="urlIn" placeholder="http://127.0.0.1:5000" />
+    <div class="mact">
+      <button class="btn-pri" onclick="saveSettings()">Save &amp; Test</button>
+      <button class="btn-sec" onclick="closeSettings()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  // ── Server address ───────────────────────────────────────────────────────────
-  // Must match the host/port in app.py
-  const SERVER = 'http://127.0.0.1:5000';
+  let BASE = localStorage.getItem('srag_url') || 'http://127.0.0.1:5000';
+  document.getElementById('urlIn').value = BASE;
+  checkConn();
 
-  // ── Server status check ──────────────────────────────────────────────────────
-  async function checkServer() {
-    const dot  = document.getElementById('status-dot');
-    const text = document.getElementById('status-text');
+  async function checkConn() {
+    const dot = document.getElementById('sDot');
+    const txt = document.getElementById('sTxt');
+    const bar = document.getElementById('offBar');
     try {
-      const res  = await fetch(`${SERVER}/health`, { signal: AbortSignal.timeout(3000) });
-      const data = await res.json();
-      dot.className  = 'status-dot online';
-      text.textContent = `Server online · ${data.documents_loaded} papers loaded`;
+      const r = await fetch(BASE + '/health', { signal: AbortSignal.timeout(4000) });
+      if (!r.ok) throw new Error();
+      dot.className = 'sdot on';
+      txt.textContent = 'Server connected';
+      bar.classList.add('hidden');
     } catch {
-      dot.className  = 'status-dot offline';
-      text.textContent = 'Server offline — run: python app.py';
+      dot.className = 'sdot off';
+      txt.textContent = 'Server offline';
+      bar.classList.remove('hidden');
     }
   }
 
-  // Check on load, then every 15 seconds
-  checkServer();
-  setInterval(checkServer, 15000);
-
-  // ── Send question ─────────────────────────────────────────────────────────────
-  async function sendQuestion() {
-    const input    = document.getElementById('question');
-    const btn      = document.getElementById('send-btn');
-    const question = input.value.trim();
-
-    if (!question) return;
-
-    // Clear input
-    input.value = '';
-    input.style.height = 'auto';
-
-    // Show user message
-    addMessage('user', 'You', question);
-
-    // Show thinking indicator
-    const thinkId = showThinking();
+  async function ask() {
+    const q = document.getElementById('qin').value.trim();
+    if (!q) return;
+    const btn = document.getElementById('sendBtn');
+    const ico = document.getElementById('sendIco');
     btn.disabled = true;
+    ico.className = 'fa-solid fa-spinner spin';
+    document.getElementById('ansWrap').classList.add('hidden');
 
     try {
-      // Send question to Flask backend
-      const res = await fetch(`${SERVER}/ask`, {
-        method:  'POST',
+      const r = await fetch(BASE + '/ask', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ question })
+        body: JSON.stringify({ question: q })
       });
-
-      const data = await res.json();
-      hideThinking(thinkId);
-
-      if (data.error) {
-        addMessage('ai', 'Error', data.error, [], true);
-      } else {
-        addMessage('ai', 'Assistant', data.answer, data.sources);
-      }
-
-    } catch (err) {
-      hideThinking(thinkId);
-      addMessage('ai', 'Error',
-        'Cannot reach the server.\nMake sure app.py is running in your terminal.',
-        [], true
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      showAns(d.answer, d.sources || []);
+    } catch (e) {
+      showAns(
+        'Could not reach the server.\n\nMake sure python app.py is running in your project folder, ' +
+        'then click the status pill to reconfigure.\n\nError: ' + e.message,
+        []
       );
-      // Refresh status dot
-      checkServer();
-    }
-
-    btn.disabled = false;
-    input.focus();
-  }
-
-  // ── Add a message to the chat ─────────────────────────────────────────────────
-  function addMessage(role, label, text, sources = [], isError = false) {
-    // Remove welcome state on first message
-    const welcome = document.getElementById('welcome');
-    if (welcome) welcome.remove();
-
-    const chat = document.getElementById('chat');
-
-    // Message container
-    const msg = document.createElement('div');
-    msg.className = `message ${role}${isError ? ' error' : ''}`;
-
-    // Label
-    const lbl = document.createElement('div');
-    lbl.className   = 'msg-label';
-    lbl.textContent = label;
-
-    // Bubble
-    const bubble = document.createElement('div');
-    bubble.className   = 'msg-bubble';
-    bubble.textContent = text;  // textContent prevents XSS
-
-    msg.appendChild(lbl);
-    msg.appendChild(bubble);
-
-    // Source tags (which papers were used)
-    if (sources && sources.length > 0) {
-      const src = document.createElement('div');
-      src.className = 'sources';
-      sources.forEach(name => {
-        const tag = document.createElement('span');
-        tag.className   = 'source-tag';
-        tag.textContent = name;
-        src.appendChild(tag);
-      });
-      msg.appendChild(src);
-    }
-
-    chat.appendChild(msg);
-    chat.scrollTop = chat.scrollHeight;
-  }
-
-  // ── Thinking indicator ────────────────────────────────────────────────────────
-  function showThinking() {
-    const welcome = document.getElementById('welcome');
-    if (welcome) welcome.remove();
-
-    const chat = document.getElementById('chat');
-    const id   = 'thinking-' + Date.now();
-
-    const msg    = document.createElement('div');
-    msg.className = 'message ai';
-    msg.id        = id;
-
-    const lbl    = document.createElement('div');
-    lbl.className   = 'msg-label';
-    lbl.textContent = 'Assistant';
-
-    const bubble = document.createElement('div');
-    bubble.className = 'msg-bubble';
-    bubble.innerHTML = `
-      <div class="thinking-dots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-      </div>
-    `;
-
-    msg.appendChild(lbl);
-    msg.appendChild(bubble);
-    chat.appendChild(msg);
-    chat.scrollTop = chat.scrollHeight;
-    return id;
-  }
-
-  function hideThinking(id) {
-    const el = document.getElementById(id);
-    if (el) el.remove();
-  }
-
-  // ── Suggestion buttons ────────────────────────────────────────────────────────
-  function useSuggestion(btn) {
-    document.getElementById('question').value = btn.textContent;
-    sendQuestion();
-  }
-
-  // ── Keyboard: Enter sends, Shift+Enter adds newline ───────────────────────────
-  function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendQuestion();
+    } finally {
+      btn.disabled = false;
+      ico.className = 'fa-solid fa-paper-plane';
     }
   }
 
-  // ── Auto-resize textarea as user types ────────────────────────────────────────
-  function autoResize(el) {
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  function showAns(text, sources) {
+    document.getElementById('ansBody').innerHTML =
+      text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    document.getElementById('srcTags').innerHTML =
+      sources.map(s => `<span class="src-tag"><i class="fa-solid fa-file-lines"></i>${s}</span>`).join('');
+    const w = document.getElementById('ansWrap');
+    w.classList.remove('hidden');
+    w.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  function useEg(el) {
+    document.getElementById('qin').value = el.textContent;
+    onInput();
+    document.getElementById('qin').focus();
+  }
+  function onInput() {
+    document.getElementById('cc').textContent = document.getElementById('qin').value.length + ' / 500';
+  }
+  function onKey(e) { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) ask(); }
+
+  function copyAns() {
+    navigator.clipboard.writeText(document.getElementById('ansBody').innerText).then(() => {
+      const b = document.getElementById('copyBtn');
+      b.className = 'fa-solid fa-check copy-btn';
+      setTimeout(() => { b.className = 'fa-solid fa-copy copy-btn'; }, 1600);
+    });
+  }
+
+  function openSettings()  { document.getElementById('urlIn').value = BASE; document.getElementById('modal').classList.remove('hidden'); }
+  function closeSettings() { document.getElementById('modal').classList.add('hidden'); }
+  function saveSettings()  {
+    BASE = document.getElementById('urlIn').value.replace(/\/$/, '');
+    localStorage.setItem('srag_url', BASE);
+    closeSettings();
+    checkConn();
+  }
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal')) closeSettings();
+  });
 </script>
-
 </body>
 </html>
